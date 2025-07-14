@@ -1,0 +1,16 @@
+attackerLocated(a).
+attackGoal(execCode(_,_)).
+
+hacl(a,pc1,tcp,80).
+hacl(a,pc2,tcp,80).
+hacl(pc1,goal,tcp,80).
+hacl(pc2,goal,tcp,80).
+
+hostServiceInfo(pc1,service,tcp,80,serviceaccount).
+vulExists(pc1,vul1,service,remoteExploit,privEscalation).
+
+hostServiceInfo(pc2,service,tcp,80,serviceaccount).
+vulExists(pc2,vul2,service,remoteExploit,privEscalation).
+
+hostServiceInfo(goal,service,tcp,80,serviceaccount).
+vulExists(goal,vul3,service,remoteExploit,privEscalation).
