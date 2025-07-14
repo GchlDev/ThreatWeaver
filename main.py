@@ -5,7 +5,7 @@ from threat_weaver import graph
 
 unique = set()
 viewer = graph.MulVALGraph(name='Small-Scale Enterprise Network')
-analyzer = analyze.LogicAnalyzer()
+analyzer = analyze.LogicAnalyzer(yaml_path='interaction.yaml')
 
 data_loader = reader.MulVALLoader('3H1G.P')
 for predicate, attributes in data_loader.next_fact():

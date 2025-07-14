@@ -1,0 +1,108 @@
+# Predicates Declaration
+
+
+primitive:
+  - attackerLocated(_host).
+  - hacl(_src, _dst, _prot, _port).
+  - vulExists(_machine, _vulID, _program, _range, _impact).
+  - hostServiceInfo(_host, _program, _prot, _port, _user).
+  - filesWithAccess(_host, _user, _access, _path).
+  - hasAccount(_host, _user).
+  - illegalLogIn(_host, _prot, _port).
+
+meta:
+  - attackGoal(_).
+
+derived:
+  - netAccess(_machine, _prot, _port).
+  - maliciousInput(_machine).
+  - execCode(_host, _user).
+  - dos(_host, _service).
+  - accessFile(_machine, _access, _filepath).
+
+
+
+# Rule Declaration
+
+interaction:
+  - rule: |
+      netAccess(Host, Prot, Port) :-
+        attackerLocated(Zone),
+        hacl(Zone, Host, Prot, Port).
+    description: 'direct network access'
+    weight: 1.0
+
+  - rule: |
+      netAccess(H2, Prot, Port) :-
+        execCode(H1, _Perm),
+        hacl(H1, H2, Prot, Port).
+    description: 'multi-hop access'
+    weight: 0.5
+
+  - rule: |
+      execCode(Host, Perm) :-
+        vulExists(Host, _vulID, Program, remoteExploit, privEscalation),
+        hostServiceInfo(Host, Program, Prot, Port, Perm),
+        netAccess(Host, Prot, Port).
+    description: 'remote exploit of a a vulnerable host program'
+    weight: 1.0
+
+  - rule: |
+      execCode(Host, root) :-
+        vulExists(Host, _vulID, Program, localExploit, privEscalation),
+        hostServiceInfo(Host, Program, Prot, Port, Perm),
+        execCode(Host, Perm).
+    description: 'local exploit of a vulnerable host program'
+    weight: 1.0
+
+  - rule: |
+      execCode(Host, Perm) :-
+        hostServiceInfo(Host, sshd, Prot, Port, Perm),
+        netAccess(Host, Prot, Port).
+    description: 'remote user login via ssh'
+    weight: 1.0
+
+  - rule: |
+      dos(Host, Program) :-
+        vulExists(Host, _vulID, Program, remoteExploit, denialOfService),
+        hostServiceInfo(Host, Program, Prot, Port, Perm),
+        netAccess(Host, Prot, Port).
+    description: 'performing a Denial of Service on a remote service'
+    weight: 1.0
+
+  - rule: |
+      accessFile(Host, Access, Path) :-
+        execCode(Host, Perm),
+        filesWithAccess(Host, Perm, Access, Path).
+    description: 'execCode implies file access'
+    weight: 1.0
+
+  - rule: |
+      execCode(Host, Perm):-
+        netAccess(Host, Prot, Port),
+        illegalLogIn(Host, Prot, Port),
+        hasAccount(Host, Perm).
+    description: 'unauthorized login to a system account'
+    weight: 1.0
+
+  - rule: |
+      maliciousInput(Host) :-
+        attackerLocated(Site),
+        hacl(Host, Site, tcp, 443).
+    description: 'browsing a malicious website'
+    weight: 1.0
+
+  - rule: |
+      maliciousInput(Host) :-
+        attackerLocated(Site),
+        hacl(Host, Site, tcp, 80).
+    description: 'browsing a malicious website'
+    weight: 1.0
+
+  - rule: |
+      execCode(Host, Perm) :-
+        maliciousInput(Host),
+        vulExists(Host, _vulID, Program, remoteExploit, privEscalation),
+        hostServiceInfo(Host, Program, Prot, Port, Perm).
+    description: 'remote code execution via malicious input on a vulnerable host program'
+    weight: 1.0
