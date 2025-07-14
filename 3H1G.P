@@ -14,3 +14,4 @@ vulExists(pc2,vul2,service,remoteExploit,privEscalation).
 
 hostServiceInfo(goal,service,tcp,80,serviceaccount).
 vulExists(goal,vul3,service,remoteExploit,privEscalation).
+filesWithAccess(goal, serviceaccount, read, 'C:\Program Files').
