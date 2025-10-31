@@ -1,13 +1,13 @@
 from threat_weaver import analyze
-from threat_weaver import reader
+from threat_weaver import data
 from threat_weaver import graph
 
 
 unique = set()
 viewer = graph.MulVALGraph(name='Small-Scale Enterprise Network')
-analyzer = analyze.LogicAnalyzer(yaml_path='interaction.yaml')
+analyzer = analyze.LogicalAGAnalyzer(yaml_path='interaction.yaml')
 
-data_loader = reader.MulVALLoader('3H1G.P')
+data_loader = data.MulVALInputLoader('3H1G.P')
 for predicate, attributes in data_loader.next_fact():
     results = analyzer.update(predicate, attributes)
     for result in results:
@@ -16,8 +16,5 @@ for predicate, attributes in data_loader.next_fact():
             viewer.insert(result)
             unique.add(description)
 
-
 viewer.to_gml('ThreatWeaver')
 viewer.to_pdf('ThreatWeaver')
-
-
